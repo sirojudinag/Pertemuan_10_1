@@ -13,16 +13,14 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 //import android.support.v7.app.ActionBarActivity;
 
-
-
 import android.hardware.SensorManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
-
 
 
 public class MainActivity extends AppCompatActivity implements LocationListener, SensorEventListener {
@@ -30,6 +28,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     private TextView longitudeField;
     private LocationManager locationManager;
     private String provider;
+
+    //this
+    private ImageView image;
+    private float currentDegree = 0f;
+    private SensorManager mSensorManager;
+    TextView tvHeading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             latituteField.setText("Location not available");
             longitudeField.setText("Location not available");
         }
+
+        //this
+        image = (ImageView) findViewById(R.id.imageViewCompass);
+        tvHeading = (TextView) findViewById(R.id.tvHeading);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+
     }
 
     @Override
@@ -62,12 +73,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             return;
         }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
+        //this
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_GAME);
     }
+
     @Override
     protected void onPause() {
         super.onPause();
         locationManager.removeUpdates(this);
+        //this
+        mSensorManager.unregisterListener(this);
     }
+
     @Override
     public void onLocationChanged(Location location) {
         double lat = (location.getLatitude());
@@ -75,23 +92,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         latituteField.setText(String.valueOf(lat));
         longitudeField.setText(String.valueOf(lng));
     }
+
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
+
     @Override
     public void onProviderEnabled(String provider) {
         Toast.makeText(this, "Enabled new provider " + provider,
                 Toast.LENGTH_SHORT).show();
     }
+
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(this, "Disabled provider " + provider,
                 Toast.LENGTH_SHORT).show();
     }
 
+    //this
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        float degree = Math.round(event.values[0]);
+        float degree = Math.round(sensorEvent.values[0]);
         tvHeading.setText("Heading: " + Float.toString(degree) + " degrees");
         RotateAnimation ra = new RotateAnimation(
                 currentDegree, -degree,
@@ -105,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-     //   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 }
